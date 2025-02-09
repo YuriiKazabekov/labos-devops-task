@@ -1,0 +1,4 @@
+vault kv put secret/backend-api db_username=admin db_password=ChangeMe123
+vault policy write backend-api backend-api-policy.hcl
+
+nomad job run -var="BUILD_NUMBER=6" backend-api.nomad

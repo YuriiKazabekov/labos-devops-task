@@ -1,0 +1,20 @@
+groups:
+  - name: backend-api-alerts
+    rules:
+      - alert: BackendApiDown
+        expr: up{job="backend-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend API is down"
+          description: "No instance of the backend API is up for more than 1 minute."
+
+      - alert: HighCpuUsage
+        expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[1m])) by (instance) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 2 minutes on instance {{ $labels.instance }}."

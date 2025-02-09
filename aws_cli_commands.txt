@@ -1,0 +1,13 @@
+# Configure S3 bucket for tf.states
+aws s3 mb s3://labos-terraform-state-bucket-01 --region us-east-1 --profile labos
+aws s3 cp /dev/null s3://labos-terraform-state-bucket-01 --sse AES256 --profile labos
+aws s3api put-bucket-versioning --bucket labos-terraform-state-bucket-01 --versioning-configuration Status=Enabled --profile labos
+aws s3 ls --profile labos
+
+# Create key-pair and store it locally
+aws ec2 create-key-pair --key-name labos-keypair-01 --query 'KeyMaterial12e12urhfg84933e1f3243f' --profile labos --output text > labos-keypair-01.pem
+
+
+
+
+

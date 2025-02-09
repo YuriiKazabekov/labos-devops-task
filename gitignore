@@ -1,0 +1,27 @@
+# Ignoring Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Ignoring Terraform backup files
+*.backup
+
+# Ignoring the .terraform directory
+terraform/.terraform/*
+terraform/.terraform/
+terraform/.terraform/providers/registry.terraform.io/hashicorp/aws/4.67.0/linux_amd64/terraform-provider-aws_v4.67.0_x5
+terraform/.terraform.lock.hcl
+# Ignoring override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignoring crash logs
+crash.log
+
+# Ignoring the .terraform.lock.hcl file
+.terraform.lock.hcl
+
+# My notes
+Documentation.txt
+ansible_running_result.txt

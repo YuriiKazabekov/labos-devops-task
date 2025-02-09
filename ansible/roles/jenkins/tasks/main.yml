@@ -1,0 +1,43 @@
+---
+- name: Update apt cache and install prerequisites
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    name:
+      - fontconfig
+      - openjdk-17-jre
+  # First, update the apt cache and install prerequisites before adding the Jenkins repository.
+
+- name: Download Jenkins repository key
+  get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /usr/share/keyrings/jenkins-keyring.asc
+    mode: '0644'
+  # Download the Jenkins repository key to /usr/share/keyrings.
+
+- name: Add Jenkins repository
+  copy:
+    dest: /etc/apt/sources.list.d/jenkins.list
+    content: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/\n"
+    owner: root
+    group: root
+    mode: '0644'
+  # Add the Jenkins repository to the apt sources list with the signed-by option.
+
+- name: Update apt cache after adding Jenkins repository
+  apt:
+    update_cache: yes
+  # Update the apt cache to include the new Jenkins repository.
+
+- name: Install Jenkins
+  apt:
+    name: jenkins
+    state: present
+  # Install the Jenkins package.
+
+- name: Start and enable Jenkins service
+  systemd:
+    name: jenkins
+    state: started
+    enabled: yes
+  # Start the Jenkins service and enable it to start on boot.

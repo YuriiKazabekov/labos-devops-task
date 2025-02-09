@@ -1,0 +1,186 @@
+Started by user Labos
+Obtained Jenkinsfile from git https://github.com/YuriiKazabekov/Labos.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/Build_Image
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential github-ssh
+Cloning the remote Git repository
+Cloning repository https://github.com/YuriiKazabekov/Labos.git
+ > git init /var/lib/jenkins/workspace/Build_Image # timeout=10
+Fetching upstream changes from https://github.com/YuriiKazabekov/Labos.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.25.1'
+using GIT_SSH to set credentials 
+Verifying host key using known hosts file, will automatically accept unseen keys
+ > git fetch --tags --force --progress -- https://github.com/YuriiKazabekov/Labos.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git config remote.origin.url https://github.com/YuriiKazabekov/Labos.git # timeout=10
+ > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+Avoid second fetch
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision a85284254d6b94b0ec3d7b637251f44a14a5bc7e (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f a85284254d6b94b0ec3d7b637251f44a14a5bc7e # timeout=10
+Commit message: "update nomad"
+ > git rev-list --no-walk 3258ae5ecd1fc473e003c5bf5bd45f8a13848ef5 # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential github-ssh
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/Build_Image/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/YuriiKazabekov/Labos.git # timeout=10
+Fetching upstream changes from https://github.com/YuriiKazabekov/Labos.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.25.1'
+using GIT_SSH to set credentials 
+Verifying host key using known hosts file, will automatically accept unseen keys
+ > git fetch --tags --force --progress -- https://github.com/YuriiKazabekov/Labos.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision a85284254d6b94b0ec3d7b637251f44a14a5bc7e (refs/remotes/origin/main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f a85284254d6b94b0ec3d7b637251f44a14a5bc7e # timeout=10
+Commit message: "update nomad"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] sh
++ docker build -t ykaz1291/backend-api:6 --network=host -f docker/Dockerfile .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 683B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.9-slim
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/python:3.9-slim@sha256:f9364cd6e0c146966f8f23fc4fd85d53f2e604bdde74e3c06565194dc4a02f85
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 976B done
+#5 DONE 0.0s
+
+#6 [2/5] WORKDIR /app
+#6 CACHED
+
+#7 [3/5] COPY docker/requirements.txt /app/
+#7 CACHED
+
+#8 [4/5] RUN pip install --upgrade pip &&     pip install -r requirements.txt
+#8 CACHED
+
+#9 [5/5] COPY docker/app.py /app/
+#9 DONE 0.1s
+
+#10 exporting to image
+#10 exporting layers 0.0s done
+#10 writing image sha256:e7a60505852109b8e491078f547170615380b65b1cfb4afcbfbb9d8121016af0 done
+#10 naming to docker.io/ykaz1291/backend-api:6 done
+#10 DONE 0.0s
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Push Docker Image)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withDockerRegistry
+Using the existing docker config file.
+Removing blacklisted property: auths
+$ docker login -u ykaz1291 -p ******** https://index.docker.io/v1/
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+WARNING! Your password will be stored unencrypted in /var/lib/jenkins/workspace/Build_Image@tmp/58919b24-9167-455d-b018-71ea296b504a/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[Pipeline] {
+[Pipeline] isUnix
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] sh
++ docker tag ykaz1291/backend-api:6 index.docker.io/ykaz1291/backend-api:6
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] isUnix
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] sh
++ docker push index.docker.io/ykaz1291/backend-api:6
+The push refers to repository [docker.io/ykaz1291/backend-api]
+846b1af86aee: Preparing
+ce4c0247b58d: Preparing
+205c0f438b16: Preparing
+8fa007d85adf: Preparing
+6022e9b5727d: Preparing
+e0dfbff797f9: Preparing
+0eaf13317391: Preparing
+7914c8f600f5: Preparing
+e0dfbff797f9: Waiting
+0eaf13317391: Waiting
+7914c8f600f5: Waiting
+205c0f438b16: Layer already exists
+8fa007d85adf: Layer already exists
+6022e9b5727d: Layer already exists
+ce4c0247b58d: Layer already exists
+0eaf13317391: Layer already exists
+e0dfbff797f9: Layer already exists
+7914c8f600f5: Layer already exists
+846b1af86aee: Pushed
+6: digest: sha256:1bf8cda4cbc3e45438403ce545d7d5c4ba351e804f9c7de47d469a823673ee91 size: 1990
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withDockerRegistry
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] cleanWs
+[WS-CLEANUP] Deleting project workspace...
+[WS-CLEANUP] Deferred wipeout is used...
+[WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

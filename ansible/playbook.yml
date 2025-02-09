@@ -1,0 +1,17 @@
+- name: Configure on-premises Jenkins Server for CI/CD
+  hosts: jenkins
+  become: yes
+  roles:
+    - jenkins
+
+- name: Configure HashiCorp Services (Nomad, Consul, Vault) on EC2 Instances
+  hosts: hashicorp
+  become: yes
+  roles:
+    - hashicorp
+
+- name: Configure backend-api server and install Docker
+  hosts: backendapi
+  become: yes
+  roles:
+    - backend-api

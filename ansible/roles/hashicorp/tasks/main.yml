@@ -1,0 +1,246 @@
+---
+# Install required dependencies
+- name: Update apt cache and install required packages
+  apt:
+    name:
+      - unzip
+      - curl
+    state: present
+    update_cache: yes
+
+#########################
+# Nomad Installation & Configuration
+#########################
+
+- name: Set Nomad version
+  set_fact:
+    nomad_version: "1.9.5"
+
+- name: Download Nomad zip archive
+  get_url:
+    url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/nomad_{{ nomad_version }}_linux_amd64.zip"
+    dest: "/tmp/nomad.zip"
+    mode: '0644'
+
+- name: Unarchive Nomad binary to /usr/local/bin
+  unarchive:
+    src: "/tmp/nomad.zip"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    creates: "/usr/local/bin/nomad"
+
+- name: Ensure Nomad binary is executable
+  file:
+    path: /usr/local/bin/nomad
+    mode: '0755'
+
+- name: Create Nomad configuration directory
+  file:
+    path: /etc/nomad
+    state: directory
+    mode: '0755'
+
+- name: Create Nomad data directory
+  file:
+    path: /opt/nomad
+    state: directory
+    mode: '0755'
+
+- name: Create Nomad configuration file
+  copy:
+    dest: /etc/nomad/nomad.hcl
+    content: |
+      data_dir  = "/opt/nomad"
+      bind_addr = "0.0.0.0"
+      server {
+        enabled = true
+        bootstrap_expect = 1
+      }
+      client {
+        enabled = true
+      }
+    mode: '0644'
+
+- name: Create Nomad systemd service file
+  copy:
+    dest: /etc/systemd/system/nomad.service
+    content: |
+      [Unit]
+      Description=Nomad Agent
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      ExecStart=/usr/local/bin/nomad agent -config=/etc/nomad
+      ExecReload=/bin/kill -HUP $MAINPID
+      KillMode=process
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+#########################
+# Consul Installation & Configuration
+#########################
+
+- name: Set Consul version
+  set_fact:
+    consul_version: "1.9.0"
+
+- name: Download Consul zip archive
+  get_url:
+    url: "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip"
+    dest: "/tmp/consul.zip"
+    mode: '0644'
+
+- name: Unarchive Consul binary to /usr/local/bin
+  unarchive:
+    src: "/tmp/consul.zip"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    creates: "/usr/local/bin/consul"
+
+- name: Ensure Consul binary is executable
+  file:
+    path: /usr/local/bin/consul
+    mode: '0755'
+
+- name: Create Consul configuration directory
+  file:
+    path: /etc/consul
+    state: directory
+    mode: '0755'
+
+- name: Create Consul data directory
+  file:
+    path: /opt/consul
+    state: directory
+    mode: '0755'
+
+- name: Create Consul configuration file
+  copy:
+    dest: /etc/consul/consul.hcl
+    content: |
+      data_dir = "/opt/consul"
+      bind_addr = "0.0.0.0"
+      server = true
+      bootstrap_expect = 1
+    mode: '0644'
+
+- name: Create Consul systemd service file
+  copy:
+    dest: /etc/systemd/system/consul.service
+    content: |
+      [Unit]
+      Description=Consul Agent
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      ExecStart=/usr/local/bin/consul agent -config-file=/etc/consul/consul.hcl
+      ExecReload=/bin/kill -HUP $MAINPID
+      KillMode=process
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+#########################
+# Vault Installation & Configuration
+#########################
+
+- name: Set Vault version
+  set_fact:
+    vault_version: "1.7.0"
+
+- name: Download Vault zip archive
+  get_url:
+    url: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: "/tmp/vault.zip"
+    mode: '0644'
+
+- name: Unarchive Vault binary to /usr/local/bin
+  unarchive:
+    src: "/tmp/vault.zip"
+    dest: "/usr/local/bin"
+    remote_src: yes
+    creates: "/usr/local/bin/vault"
+
+- name: Ensure Vault binary is executable
+  file:
+    path: /usr/local/bin/vault
+    mode: '0755'
+
+- name: Create Vault configuration directory
+  file:
+    path: /etc/vault
+    state: directory
+    mode: '0755'
+
+- name: Create Vault data directory
+  file:
+    path: /opt/vault
+    state: directory
+    mode: '0755'
+
+- name: Create Vault configuration file
+  copy:
+    dest: /etc/vault/vault.hcl
+    content: |
+      storage "file" {
+        path = "/opt/vault/data"
+      }
+      listener "tcp" {
+        address     = "0.0.0.0:8200"
+        tls_disable = 1
+      }
+      ui = true
+    mode: '0644'
+
+- name: Create Vault systemd service file
+  copy:
+    dest: /etc/systemd/system/vault.service
+    content: |
+      [Unit]
+      Description=Vault Server
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      ExecStart=/usr/local/bin/vault server -config=/etc/vault/vault.hcl
+      ExecReload=/bin/kill -HUP $MAINPID
+      KillMode=process
+      Restart=on-failure
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+#########################
+# Reload systemd and start services
+#########################
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Start and enable Nomad service
+  systemd:
+    name: nomad
+    state: started
+    enabled: yes
+
+- name: Start and enable Consul service
+  systemd:
+    name: consul
+    state: started
+    enabled: yes
+
+- name: Start and enable Vault service
+  systemd:
+    name: vault
+    state: started
+    enabled: yes
